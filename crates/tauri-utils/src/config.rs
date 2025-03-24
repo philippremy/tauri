@@ -644,6 +644,8 @@ pub struct MacConfig {
   /// DMG-specific settings.
   #[serde(default)]
   pub dmg: DmgConfig,
+  /// Path to the Info.plist file for the bundle.
+  pub info_plist_path: Option<PathBuf>,
 }
 
 impl Default for MacConfig {
@@ -658,6 +660,7 @@ impl Default for MacConfig {
       provider_short_name: None,
       entitlements: None,
       dmg: Default::default(),
+      info_plist_path: None,
     }
   }
 }
@@ -2530,6 +2533,8 @@ pub struct IosConfig {
     default = "ios_minimum_system_version"
   )]
   pub minimum_system_version: String,
+  /// Path to the Info.plist file for the bundle.
+  pub info_plist_path: Option<PathBuf>,
 }
 
 impl Default for IosConfig {
@@ -2539,6 +2544,7 @@ impl Default for IosConfig {
       frameworks: None,
       development_team: None,
       minimum_system_version: ios_minimum_system_version(),
+      info_plist_path: None,
     }
   }
 }
