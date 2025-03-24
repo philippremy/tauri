@@ -118,7 +118,10 @@ impl CodegenContext {
     {
       // This is fine, as config_parent is src-tauri (which we need)!
       if let Some(info_plist_path) = &config.bundle.macos.info_plist_path {
-        println!("cargo:rerun-if-changed={}", config_parent.join(info_plist_path).display());
+        println!(
+          "cargo:rerun-if-changed={}",
+          config_parent.join(info_plist_path).display()
+        );
       }
     }
 

@@ -309,7 +309,9 @@ pub fn context_codegen(data: ContextData) -> EmbeddedAssetsResult<TokenStream> {
       } else {
         plist::Value::Dictionary(Default::default())
       }
-    } else { plist::Value::Dictionary(Default::default()) };
+    } else {
+      plist::Value::Dictionary(Default::default())
+    };
 
     if let Some(plist) = info_plist.as_dictionary_mut() {
       if let Some(product_name) = &config.product_name {

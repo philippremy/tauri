@@ -191,20 +191,48 @@ pub fn command(options: Options, noise_level: NoiseLevel) -> Result<()> {
   // Set the defaults statically instead
   plist.insert("LSRequiresIPhoneOS".into(), true.into());
   plist.insert("UILaunchStoryboardName".into(), "LaunchScreen".into());
-  plist.insert("UIRequiredDeviceCapabilities".into(), vec!["arm64".into(), "metal".into()].into());
-  plist.insert("UISupportedInterfaceOrientations".into(), vec!["UIInterfaceOrientationPortrait".into(), "UIInterfaceOrientationLandscapeLeft".into(), "UIInterfaceOrientationLandscapeRight".into()].into());
-  plist.insert("UISupportedInterfaceOrientations~ipad".into(), vec!["UIInterfaceOrientationPortrait".into(), "UIInterfaceOrientationLandscapeLeft".into(), "UIInterfaceOrientationLandscapeRight".into(), "UIInterfaceOrientationPortraitUpsideDown".into()].into());
+  plist.insert(
+    "UIRequiredDeviceCapabilities".into(),
+    vec!["arm64".into(), "metal".into()].into(),
+  );
+  plist.insert(
+    "UISupportedInterfaceOrientations".into(),
+    vec![
+      "UIInterfaceOrientationPortrait".into(),
+      "UIInterfaceOrientationLandscapeLeft".into(),
+      "UIInterfaceOrientationLandscapeRight".into(),
+    ]
+    .into(),
+  );
+  plist.insert(
+    "UISupportedInterfaceOrientations~ipad".into(),
+    vec![
+      "UIInterfaceOrientationPortrait".into(),
+      "UIInterfaceOrientationLandscapeLeft".into(),
+      "UIInterfaceOrientationLandscapeRight".into(),
+      "UIInterfaceOrientationPortraitUpsideDown".into(),
+    ]
+    .into(),
+  );
 
   // Get generated XcodeGen Info.plist
   let info_plist_path = config
-  .project_dir()
-  .join(config.scheme())
-  .join("Info.plist");
+    .project_dir()
+    .join(config.scheme())
+    .join("Info.plist");
 
   // If the user specified their own template, merge it with precedence.
   // Otherwise merge only the standard values.
   let merged_info_plist;
-  if let Some(user_plist_template) = &tauri_config.lock().unwrap().as_ref().unwrap().bundle.ios.info_plist_path {
+  if let Some(user_plist_template) = &tauri_config
+    .lock()
+    .unwrap()
+    .as_ref()
+    .unwrap()
+    .bundle
+    .ios
+    .info_plist_path
+  {
     // Create normalized path
     let normalized_path = config.app().root_dir().join(user_plist_template);
     if !normalized_path.exists() {
