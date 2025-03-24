@@ -300,13 +300,16 @@ pub fn context_codegen(data: ContextData) -> EmbeddedAssetsResult<TokenStream> {
 
   #[cfg(target_os = "macos")]
   let maybe_embed_plist_block = if target == Target::MacOS && dev && !running_tests {
-    let info_plist_path = config_parent.join("Info.plist");
-    let mut info_plist = if info_plist_path.exists() {
-      plist::Value::from_file(&info_plist_path)
-        .unwrap_or_else(|e| panic!("failed to read plist {}: {}", info_plist_path.display(), e))
-    } else {
-      plist::Value::Dictionary(Default::default())
-    };
+    let mut info_plist = if let Some(user_plist_path) = &config.bundle.macos.info_plist_path {
+      // This is fine, because config_parent is src-tauri, which we want
+      let info_plist_path = config_parent.join(user_plist_path);
+      if info_plist_path.exists() {
+        plist::Value::from_file(&info_plist_path)
+          .unwrap_or_else(|e| panic!("failed to read plist {}: {}", info_plist_path.display(), e))
+      } else {
+        plist::Value::Dictionary(Default::default())
+      }
+    } else { plist::Value::Dictionary(Default::default()) };
 
     if let Some(plist) = info_plist.as_dictionary_mut() {
       if let Some(product_name) = &config.product_name {
