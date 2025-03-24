@@ -45,23 +45,6 @@ targets:
       - path: LaunchScreen.storyboard
     info:
       path: {{app.name}}_iOS/Info.plist
-      properties:
-        LSRequiresIPhoneOS: true
-        UILaunchStoryboardName: LaunchScreen
-        UIRequiredDeviceCapabilities: [arm64, metal]
-        UISupportedInterfaceOrientations:
-          - UIInterfaceOrientationPortrait
-          - UIInterfaceOrientationLandscapeLeft
-          - UIInterfaceOrientationLandscapeRight
-        UISupportedInterfaceOrientations~ipad:
-          - UIInterfaceOrientationPortrait
-          - UIInterfaceOrientationPortraitUpsideDown
-          - UIInterfaceOrientationLandscapeLeft
-          - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: {{apple.bundle-version-short}}
-        CFBundleVersion: {{apple.bundle-version}}
-        {{~#each apple.plist-pairs}}
-        {{this.key}}: {{this.value}}{{/each}}
     entitlements:
       path: {{app.name}}_iOS/{{app.name}}_iOS.entitlements
     scheme:

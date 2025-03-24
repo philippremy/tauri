@@ -13,7 +13,7 @@ use crate::{
     config::{get as get_tauri_config, ConfigHandle},
     flock,
   },
-  interface::{AppInterface, Interface, MobileOptions, Options as InterfaceOptions},
+  interface::{AppInterface, AppSettings, Interface, MobileOptions, Options as InterfaceOptions},
   mobile::{
     use_network_address_for_dev_url, write_options, CliOptions, DevChild, DevHost, DevProcess,
   },
@@ -184,15 +184,48 @@ fn run_command(options: Options, noise_level: NoiseLevel) -> Result<()> {
   )?;
   inject_resources(&config, tauri_config.lock().unwrap().as_ref().unwrap())?;
 
+  let mut plist = plist::Dictionary::new();
+  let version = interface.app_settings().get_package_settings().version;
+  plist.insert("CFBundleShortVersionString".into(), version.clone().into());
+  plist.insert("CFBundleVersion".into(), version.into());
+
+  // From project.yml
+  // Setting Info.plist values from XcodeGens project.yml is deprecated!
+  // Set the defaults statically instead
+  plist.insert("LSRequiresIPhoneOS".into(), true.into());
+  plist.insert("UILaunchStoryboardName".into(), "LaunchScreen".into());
+  plist.insert("UIRequiredDeviceCapabilities".into(), vec!["arm64".into(), "metal".into()].into());
+  plist.insert("UISupportedInterfaceOrientations".into(), vec!["UIInterfaceOrientationPortrait".into(), "UIInterfaceOrientationLandscapeLeft".into(), "UIInterfaceOrientationLandscapeRight".into()].into());
+  plist.insert("UISupportedInterfaceOrientations~ipad".into(), vec!["UIInterfaceOrientationPortrait".into(), "UIInterfaceOrientationLandscapeLeft".into(), "UIInterfaceOrientationLandscapeRight".into(), "UIInterfaceOrientationPortraitUpsideDown".into()].into());
+
+  // Get generated XcodeGen Info.plist
   let info_plist_path = config
-    .project_dir()
-    .join(config.scheme())
-    .join("Info.plist");
-  let merged_info_plist = merge_plist(vec![
-    info_plist_path.clone().into(),
-    tauri_path.join("Info.plist").into(),
-    tauri_path.join("Info.ios.plist").into(),
-  ])?;
+  .project_dir()
+  .join(config.scheme())
+  .join("Info.plist");
+
+  // If the user specified their own template, merge it with precedence.
+  // Otherwise merge only the standard values.
+  let merged_info_plist;
+  if let Some(user_plist_template) = &tauri_config.lock().unwrap().as_ref().unwrap().bundle.ios.info_plist_path {
+    // Create normalized path
+    let normalized_path = config.app().root_dir().join(user_plist_template);
+    if !normalized_path.exists() {
+      log::warn!("The user specified Info.plist will not be considered for the final bundle. The specified path does not exist relative to the src-tauri ({}), the specified path resolved to: {}", config.app().root_dir().to_string_lossy(), normalized_path.to_string_lossy());
+    }
+    // Merge the Info.plists
+    merged_info_plist = merge_plist(vec![
+      info_plist_path.clone().into(),
+      plist::Value::Dictionary(plist).into(),
+      normalized_path.into(),
+    ])?;
+  } else {
+    // Merge the Info.plists
+    merged_info_plist = merge_plist(vec![
+      info_plist_path.clone().into(),
+      plist::Value::Dictionary(plist).into(),
+    ])?;
+  }
   merged_info_plist.to_file_xml(&info_plist_path)?;
 
   let mut pbxproj = load_pbxproj(&config)?;

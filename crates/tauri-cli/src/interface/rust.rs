@@ -1428,9 +1428,13 @@ fn tauri_config_to_bundle_settings(
       provider_short_name,
       entitlements: config.macos.entitlements,
       info_plist_path: {
-        let path = tauri_dir().join("Info.plist");
-        if path.exists() {
-          Some(path)
+        if let Some(user_plist_path) = config.macos.info_plist_path {
+          let path = tauri_dir().join(user_plist_path);
+          if path.exists() {
+            Some(path)
+          } else {
+            None
+          }
         } else {
           None
         }
